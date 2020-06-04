@@ -9,6 +9,7 @@ import threading
 from datetime import datetime
 from datetime import timedelta
 from time import sleep
+
 import pandas as pd
 import pytz
 import requests
@@ -97,14 +98,11 @@ class Producer(object):
                 df.fillna('', inplace=True)
                 # output to queue for writing
                 self.task_queue.put(df.to_dict('records'))
-                raise  Exception('aaa')
-                break
                 if resp['pagination']['last_page'] is False:
                     url = resp['pagination']['next_page']
                 else:
                     last_page = True
-        except Exception:
-
+        except Exception as e:
             logging.error(f'Error occured {str(e)}')
         finally:
             # let writer know extracting is finished
