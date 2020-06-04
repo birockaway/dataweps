@@ -9,7 +9,6 @@ import threading
 from datetime import datetime
 from datetime import timedelta
 from time import sleep
-
 import pandas as pd
 import pytz
 import requests
