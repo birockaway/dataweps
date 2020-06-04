@@ -1,5 +1,4 @@
-requests
-numpy
-pandas
-pytz
-logstash_formatter
+logstash-formatter==0.5.17
+pandas==1.0.4
+pytz==2020.1
+requests==2.23.0
