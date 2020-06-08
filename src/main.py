@@ -28,13 +28,15 @@ class Producer(object):
         self.bulk_size = params.get('bulk_size') or 500
         self.out_cols = params.get('out_cols')
         self.source = params.get('source')
-        self.timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
+        new_timestamp = datetime.now()
+        self.ts = new_timestamp.strftime('%Y-%m-%d %H:%M:%S')
+        self.source_id = new_timestamp.strftime('%Y%m%d%H%M%S')
         self.task_queue = pipeline
 
     # parser
     def parse(self, i):
         product = dict()
-        product['TS'] = self.timestamp
+        product['TS'] = self.ts
         product['COUNTRY'] = 'CZ'
         product['DISTRCHAN'] = 'CZC'
         product['MATERIAL'] = i['internal_code']
@@ -45,7 +47,7 @@ class Producer(object):
         product['URL'] = i['url']
         product['STOCK'] = 1 if i['stock'] is True else 0
         product['PRICE'] = i['price_vat']
-        product['SOURCE_ID'] = f'{self.source}_{self.timestamp}'
+        product['SOURCE_ID'] = self.source_id
         if 'availability' in i:
             # prefer global/eshop availability to regional
             availability = i['availability'].get('global') or i['availability'].get('eshop')
