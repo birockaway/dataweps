@@ -15,6 +15,7 @@ import pytz
 import requests
 from logstash_formatter import LogstashFormatterV1
 from keboola import docker
+from extractors_writer import Writer
 
 
 class Producer(object):
@@ -111,26 +112,6 @@ class Producer(object):
             self.task_queue.put('DONE')
 
 
-class Writer(object):
-    def __init__(self, task_queue, columns_list, threading_event, filepath):
-        self.task_queue = task_queue
-        self.columns_list = columns_list
-        self.threading_event = threading_event
-        self.filepath = filepath
-
-    def write(self):
-        with open(self.filepath, 'w+') as outfile:
-            results_writer = csv.DictWriter(outfile, fieldnames=self.columns_list, extrasaction='ignore')
-            results_writer.writeheader()
-            while not self.threading_event.is_set():
-                chunk = self.task_queue.get()
-                if chunk == 'DONE':
-                    logging.info('DONE received. Exiting.')
-                    self.threading_event.set()
-                else:
-                    results_writer.writerows(chunk)
-
-
 if __name__ == '__main__':
     logger = logging.getLogger()
     handler = logging.StreamHandler()
@@ -138,7 +119,7 @@ if __name__ == '__main__':
 
     handler.setFormatter(formatter)
     logger.addHandler(handler)
-    logger.setLevel(level="DEBUG")
+    logger.setLevel(level=logging.INFO)
     colnames = ['AVAILABILITY',
                 'COUNTRY',
                 'CSE_ID',
@@ -164,7 +145,7 @@ if __name__ == '__main__':
     pipeline = queue.Queue(maxsize=1000)
     event = threading.Event()
     producer = Producer(datadir, pipeline)
-    writer = Writer(pipeline, colnames, event, path)
+    writer = Writer(pipeline, colnames, path)
     with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
         executor.submit(producer.produce)
-        executor.submit(writer.write)
+        executor.submit(writer)
