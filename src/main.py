@@ -31,7 +31,7 @@ class Producer(object):
         self.source = params.get('source')
         new_timestamp = datetime.now()
         self.ts = new_timestamp.strftime('%Y-%m-%d %H:%M:%S')
-        self.source_id = new_timestamp.strftime('%Y%m%d%H%M%S')
+        self.source_id = f'{self.source}_{new_timestamp.strftime("%Y%m%d%H%M%S")}'
         self.task_queue = pipeline
 
     # parser
