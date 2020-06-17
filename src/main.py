@@ -1,6 +1,5 @@
 # get info on material we have on a product card / exists in sortiment rep
 import concurrent.futures
-import csv
 import datetime as dt
 import logging
 import os
@@ -9,6 +8,7 @@ import threading
 from datetime import datetime
 from datetime import timedelta
 from time import sleep
+from traceback import format_tb
 
 import pandas as pd
 import pytz
@@ -29,7 +29,7 @@ class Producer(object):
         self.bulk_size = params.get('bulk_size') or 500
         self.out_cols = params.get('out_cols')
         self.source = params.get('source')
-        new_timestamp = datetime.now()
+        new_timestamp = datetime.utcnow()
         self.ts = new_timestamp.strftime('%Y-%m-%d %H:%M:%S')
         self.source_id = f'{self.source}_{new_timestamp.strftime("%Y%m%d%H%M%S")}'
         self.task_queue = pipeline
@@ -106,7 +106,8 @@ class Producer(object):
                 else:
                     last_page = True
         except Exception as e:
-            logging.error(f'Error occured {str(e)}')
+            trace = 'Traceback:\n' + ''.join(format_tb(e.__traceback__))
+            logging.error(f'Error occured {str(e)}', extra={'full_message': trace})
         finally:
             # let writer know extracting is finished
             self.task_queue.put('DONE')
